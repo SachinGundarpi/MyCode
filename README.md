@@ -36,8 +36,8 @@ public class JsonComparator {
                 String key = entry1.getKey();
                 JsonNode value1 = entry1.getValue();
                 JsonNode value2 = node2.get(key);
-                if (value2 == null) {
-                    System.out.println("Key '" + key + "' not found in JSON 2 at path: " + path + "." + key);
+                if (value2 == null || !value1.equals(value2)) {
+                    System.out.println("Mismatched key '" + key + "' at path: " + path + "." + key);
                 } else {
                     compareJson(value1, value2, path + "." + key);
                 }
@@ -62,14 +62,6 @@ public class JsonComparator {
             for (int i = 0; i < Math.min(node1.size(), node2.size()); i++) {
                 compareJson(node1.get(i), node2.get(i), path + "[" + i + "]");
             }
-        }
-
-        if (!node1.equals(node2)) {
-            System.out.println("JSON mismatch at path: " + path);
-            System.out.println("JSON 1:");
-            System.out.println(node1);
-            System.out.println("JSON 2:");
-            System.out.println(node2);
         }
     }
 }
