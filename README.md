@@ -15,43 +15,12 @@ public class JsonComparator {
             JsonNode node1 = objectMapper.readTree(new File("file1.json"));
             JsonNode node2 = objectMapper.readTree(new File("file2.json"));
 
-            // Print JSON files
-            System.out.println("JSON 1:");
-            printJson(node1, "");
-            System.out.println("\nJSON 2:");
-            printJson(node2, "");
-
             // Compare JSON files
             compareJson(node1, node2, "");
             System.out.println("\nJSON files comparison completed.");
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    private static void printJson(JsonNode node, String path) {
-        if (node.isObject()) {
-            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> entry = fields.next();
-                String key = entry.getKey();
-                JsonNode value = entry.getValue();
-                if (value.isContainerNode()) {
-                    printJson(value, path + "." + key);
-                } else {
-                    System.out.println("Key: " + path + "." + key + ", Value: " + value);
-                }
-            }
-        } else if (node.isArray()) {
-            for (int i = 0; i < node.size(); i++) {
-                JsonNode arrayItem = node.get(i);
-                if (arrayItem.isContainerNode()) {
-                    printJson(arrayItem, path + "[" + i + "]");
-                } else {
-                    System.out.println("Key: " + path + "[" + i + "], Value: " + arrayItem);
-                }
-            }
         }
     }
 
