@@ -1,39 +1,25 @@
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.io.FileReader;
 
-public class JsonPrinter {
+public class NestedJsonPrinter {
 
     public static void main(String[] args) {
+        String jsonString = "{\"name\":\"John\",\"age\":30,\"address\":{\"street\":\"123 Main St\",\"city\":\"New York\"},\"children\":[{\"name\":\"Alice\",\"age\":5},{\"name\":\"Bob\",\"age\":8}]}";
+
         try {
-            // Path to your JSON file
-            String filePath = "path_to_your_json_file.json";
-            JSONObject jsonObject = readJsonFromFile(filePath);
-            printJson(jsonObject);
-        } catch (Exception e) {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            printJsonObject(jsonObject);
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private static JSONObject readJsonFromFile(String filePath) throws JSONException {
-        try (FileReader reader = new FileReader(filePath)) {
-            StringBuilder content = new StringBuilder();
-            int i;
-            while ((i = reader.read()) != -1) {
-                content.append((char) i);
-            }
-            return new JSONObject(content.toString());
-        } catch (Exception e) {
-            throw new JSONException("Error reading JSON file: " + e.getMessage());
-        }
-    }
-
-    private static void printJson(JSONObject jsonObject) {
+    private static void printJsonObject(JSONObject jsonObject) {
         for (String key : jsonObject.keySet()) {
             Object value = jsonObject.get(key);
             if (value instanceof JSONObject) {
                 System.out.println("Key: " + key);
-                printJson((JSONObject) value);
+                printJsonObject((JSONObject) value);
             } else {
                 System.out.println("Key: " + key + ", Value: " + value);
             }
