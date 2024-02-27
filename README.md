@@ -1,12 +1,31 @@
+import org.json.JSONException;
 import org.json.JSONObject;
+import java.io.FileReader;
 
 public class JsonPrinter {
 
     public static void main(String[] args) {
-        String jsonStr = "{\"name\":\"John\",\"age\":30,\"city\":\"New York\",\"children\":[{\"name\":\"Alice\",\"age\":5},{\"name\":\"Bob\",\"age\":8}],\"address\":{\"street\":\"123 Street\",\"zip\":\"10001\"}}";
+        try {
+            // Path to your JSON file
+            String filePath = "path_to_your_json_file.json";
+            JSONObject jsonObject = readJsonFromFile(filePath);
+            printJson(jsonObject);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        JSONObject jsonObject = new JSONObject(jsonStr);
-        printJson(jsonObject);
+    private static JSONObject readJsonFromFile(String filePath) throws JSONException {
+        try (FileReader reader = new FileReader(filePath)) {
+            StringBuilder content = new StringBuilder();
+            int i;
+            while ((i = reader.read()) != -1) {
+                content.append((char) i);
+            }
+            return new JSONObject(content.toString());
+        } catch (Exception e) {
+            throw new JSONException("Error reading JSON file: " + e.getMessage());
+        }
     }
 
     private static void printJson(JSONObject jsonObject) {
