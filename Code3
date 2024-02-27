@@ -1,0 +1,156 @@
+To organize the XML to JSON conversion and JSON comparison code into a more structured framework, you can use a combination of TestNG for test management, ExtentReports for reporting, and Apache POI for reading Excel data (assuming you want to read the XML file paths from an Excel file). Here's an example framework structure:
+
+Project Structure:
+
+src
+main
+java
+com.example.framework
+XmlJsonConverter.java (for XML to JSON conversion and comparison)
+ExcelReader.java (for reading XML file paths from Excel)
+resources
+testdata.xlsx (sample Excel file with XML file paths)
+test
+java
+com.example.tests
+XmlJsonComparisonTest.java (TestNG test class)
+XmlJsonConverter.java:
+
+java
+Copy code
+// Include the code for XML to JSON conversion and comparison from the previous example
+ExcelReader.java:
+
+java
+Copy code
+import org.apache.poi.ss.usermodel.*;
+
+public class ExcelReader {
+    public static String[] getXmlFilePaths(String excelFilePath) throws Exception {
+        Workbook workbook = WorkbookFactory.create(new File(excelFilePath));
+        Sheet sheet = workbook.getSheetAt(0);
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        String[] filePaths = new String[rowCount];
+        for (int i = 0; i < rowCount; i++) {
+            Row row = sheet.getRow(i);
+            filePaths[i] = row.getCell(0).getStringCellValue();
+        }
+        workbook.close();
+        return filePaths;
+    }
+}
+XmlJsonComparisonTest.java:
+
+java
+Copy code
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import org.testng.annotations.*;
+
+public class XmlJsonComparisonTest {
+    private static ExtentReports extent;
+    private static ExtentTest test;
+
+    @BeforeSuite
+    public void setup() {
+        extent = new ExtentReports();
+        // Add ExtentReports configuration here
+    }
+
+    @AfterSuite
+    public void tearDown() {
+        extent.flush();
+    }
+
+    @Test(dataProvider = "xmlFilePaths", dataProviderClass = XmlDataProvider.class)
+    public void testXmlToJsonComparison(String xmlFilePath) {
+        test = extent.createTest("XML to JSON Comparison", "Converting XML to JSON and comparing");
+
+        try {
+            String[] xmlFilePaths = ExcelReader.getXmlFilePaths("testdata.xlsx");
+            // Assuming xmlFilePaths contains the paths to XML files
+            String xmlFilePath1 = xmlFilePaths[0];
+            String xmlFilePath2 = xmlFilePaths[1];
+
+            JsonNode node1 = XmlJsonConverter.convertXmlToJson(xmlFilePath1);
+            JsonNode node2 = XmlJsonConverter.convertXmlToJson(xmlFilePath2);
+
+            XmlJsonConverter.compareJson(node1, node2, "");
+            test.log(Status.PASS, "XML to JSON comparison completed for files: " + xmlFilePath1 + " and " + xmlFilePath2);
+        } catch (Exception e) {
+            test.log(Status.FAIL, "Failed to convert XML to JSON or compare.");
+            e.printStackTrace();
+        }
+    }
+}
+XmlDataProvider.java (for TestNG data provider):
+
+java
+Copy code
+import org.testng.annotations.DataProvider;
+
+public class XmlDataProvider {
+    @DataProvider(name = "xmlFilePaths")
+    public static Object[][] provideXmlFilePaths() {
+        try {
+            String[] xmlFilePaths = ExcelReader.getXmlFilePaths("testdata.xlsx");
+            return new Object[][]{{xmlFilePaths[0]}, {xmlFilePaths[1]}};
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Object[][]{};
+        }
+    }
+}
+In this framework, XmlJsonConverter handles the XML to JSON conversion and comparison, ExcelReader reads the XML file paths from an Excel file, and XmlJsonComparisonTest is a TestNG test class that uses these utilities to perform the conversion and comparison for each pair of XML files.
+
+User
+in this remove fetching xml file path from excel and give code to directly add XML file
+ChatGPT
+To directly add XML file paths in the XML to JSON comparison framework without fetching them from an Excel file, you can modify the XmlJsonComparisonTest class to specify the XML file paths directly in the test method. Here's the updated XmlJsonComparisonTest class:
+
+java
+Copy code
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import org.testng.annotations.*;
+
+import java.io.File;
+
+public class XmlJsonComparisonTest {
+    private static ExtentReports extent;
+    private static ExtentTest test;
+
+    @BeforeSuite
+    public void setup() {
+        extent = new ExtentReports();
+        // Add ExtentReports configuration here
+    }
+
+    @AfterSuite
+    public void tearDown() {
+        extent.flush();
+    }
+
+    @Test
+    public void testXmlToJsonComparison() {
+        test = extent.createTest("XML to JSON Comparison", "Converting XML to JSON and comparing");
+
+        try {
+            // Specify the XML file paths directly
+            String xmlFilePath1 = "path/to/xmlFile1.xml";
+            String xmlFilePath2 = "path/to/xmlFile2.xml";
+
+            JsonNode node1 = XmlJsonConverter.convertXmlToJson(xmlFilePath1);
+            JsonNode node2 = XmlJsonConverter.convertXmlToJson(xmlFilePath2);
+
+            XmlJsonConverter.compareJson(node1, node2, "");
+            test.log(Status.PASS, "XML to JSON comparison completed for files: " + xmlFilePath1 + " and " + xmlFilePath2);
+        } catch (Exception e) {
+            test.log(Status.FAIL, "Failed to convert XML to JSON or compare.");
+            e.printStackTrace();
+        }
+    }
+}
+In this modified XmlJsonComparisonTest class, you can directly specify the paths to the XML files (xmlFilePath1 and xmlFilePath2) instead of reading them from an Excel file. This allows you to control which XML files are used for the comparison directly in the test method.
