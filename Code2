@@ -1,0 +1,89 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+
+import java.io.File;
+import java.io.IOException;
+
+public class JsonComparator {
+
+    private static ExtentReports extent;
+    private static ExtentTest test;
+
+    public static void main(String[] args) {
+        // Initialize ExtentReports
+        extent = new ExtentReports();
+        extent.attachReporter(/* add your reporter here */);
+
+        // Create a test in the report
+        test = extent.createTest("XML to JSON Comparison", "Converting XML to JSON and comparing");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        XmlMapper xmlMapper = new XmlMapper();
+
+        try {
+            // Read XML files and convert to JSON
+            JsonNode node1 = xmlMapper.readTree(new File("xmlFile1.xml"));
+            JsonNode node2 = xmlMapper.readTree(new File("xmlFile2.xml"));
+
+            // Convert XML to JSON and compare
+            compareJson(node1, node2, "");
+            test.log(Status.PASS, "XML to JSON comparison completed.");
+
+        } catch (IOException e) {
+            test.log(Status.FAIL, "Failed to convert XML to JSON or compare.");
+            e.printStackTrace();
+        }
+
+        // Flush the report
+        extent.flush();
+    }
+
+    private static void compareJson(JsonNode node1, JsonNode node2, String path) {
+        if (node1.equals(node2)) {
+            return;
+        }
+
+        if (node1.isObject() && node2.isObject()) {
+            node1.fields().forEachRemaining(entry -> {
+                String key = entry.getKey();
+                JsonNode value1 = entry.getValue();
+                JsonNode value2 = node2.get(key);
+                if (value2 == null) {
+                    test.log(Status.FAIL, "Key '" + key + "' not found in JSON 2 at path: " + path + "." + key);
+                } else {
+                    compareJson(value1, value2, path + "." + key);
+                }
+            });
+
+            node2.fields().forEachRemaining(entry -> {
+                String key = entry.getKey();
+                JsonNode value2 = entry.getValue();
+                JsonNode value1 = node1.get(key);
+                if (value1 == null) {
+                    test.log(Status.FAIL, "Key '" + key + "' not found in JSON 1 at path: " + path + "." + key);
+                }
+            });
+        }
+
+        if (node1.isArray() && node2.isArray()) {
+            if (node1.size() != node2.size()) {
+                test.log(Status.FAIL, "Array size mismatch at path: " + path);
+            }
+            for (int i = 0; i < Math.min(node1.size(), node2.size()); i++) {
+                compareJson(node1.get(i), node2.get(i), path + "[" + i + "]");
+            }
+        }
+
+        if (!node1.equals(node2)) {
+            test.log(Status.FAIL, "JSON mismatch at path: " + path);
+            test.log(Status.FAIL, "JSON 1:");
+            test.log(Status.FAIL, node1.toString());
+            test.log(Status.FAIL, "JSON 2:");
+            test.log(Status.FAIL, node2.toString());
+        }
+    }
+}
