@@ -1,10 +1,7 @@
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-
 import java.io.FileReader;
-import java.util.Iterator;
 
 public class JsonReaderExample {
 
@@ -16,14 +13,39 @@ public class JsonReaderExample {
             FileReader reader = new FileReader("path_to_your_json_file.json");
             JSONObject jsonObject = (JSONObject) parser.parse(reader);
 
-            Iterator<?> iterator = jsonObject.keySet().iterator();
-            while (iterator.hasNext()) {
-                String key = (String) iterator.next();
-                String value = (String) jsonObject.get(key);
-                System.out.println("Key: " + key + ", Value: " + value);
-            }
+            printJsonObject(jsonObject);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void printJsonObject(JSONObject jsonObject) {
+        for (Object key : jsonObject.keySet()) {
+            String keyStr = (String) key;
+            Object value = jsonObject.get(keyStr);
+
+            if (value instanceof JSONObject) {
+                System.out.println("Key: " + keyStr);
+                printJsonObject((JSONObject) value);
+            } else if (value instanceof JSONArray) {
+                System.out.println("Key: " + keyStr);
+                JSONArray jsonArray = (JSONArray) value;
+                printJsonArray(jsonArray);
+            } else {
+                System.out.println("Key: " + keyStr + ", Value: " + value);
+            }
+        }
+    }
+
+    private static void printJsonArray(JSONArray jsonArray) {
+        for (Object obj : jsonArray) {
+            if (obj instanceof JSONObject) {
+                printJsonObject((JSONObject) obj);
+            } else if (obj instanceof JSONArray) {
+                printJsonArray((JSONArray) obj);
+            } else {
+                System.out.println("Value: " + obj);
+            }
         }
     }
 }
