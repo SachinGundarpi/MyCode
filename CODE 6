@@ -1,0 +1,39 @@
+private static void compareJson(JsonNode node1, JsonNode node2, String path) {
+    if (!node1.equals(node2)) {
+        System.out.println("JSON mismatch at path: " + path);
+    }
+
+    if (node1.isObject() && node2.isObject()) {
+        Iterator<Map.Entry<String, JsonNode>> fields1 = node1.fields();
+        Iterator<Map.Entry<String, JsonNode>> fields2 = node2.fields();
+
+        while (fields1.hasNext() || fields2.hasNext()) {
+            if (fields1.hasNext() && fields2.hasNext()) {
+                Map.Entry<String, JsonNode> entry1 = fields1.next();
+                Map.Entry<String, JsonNode> entry2 = fields2.next();
+
+                String key1 = entry1.getKey();
+                String key2 = entry2.getKey();
+
+                JsonNode value1 = entry1.getValue();
+                JsonNode value2 = entry2.getValue();
+
+                compareJson(value1, value2, path + "." + key1);
+            } else if (fields1.hasNext()) {
+                Map.Entry<String, JsonNode> entry1 = fields1.next();
+                String key1 = entry1.getKey();
+                System.out.println("Key '" + key1 + "' not found in JSON 2 at path: " + path + "." + key1);
+            } else {
+                Map.Entry<String, JsonNode> entry2 = fields2.next();
+                String key2 = entry2.getKey();
+                System.out.println("Key '" + key2 + "' not found in JSON 1 at path: " + path + "." + key2);
+            }
+        }
+    }
+
+    if (node1.isArray() && node2.isArray()) {
+        for (int i = 0; i < Math.min(node1.size(), node2.size()); i++) {
+            compareJson(node1.get(i), node2.get(i), path + "[" + i + "]");
+        }
+    }
+}
