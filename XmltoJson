@@ -1,0 +1,32 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import java.io.File;
+
+public class XmlToJsonConverter {
+
+    public static void main(String[] args) {
+        String inputXml1 = "path_to_input_xml_file1.xml";
+        String inputXml2 = "path_to_input_xml_file2.xml";
+        String outputJson1 = "path_to_output_json_file1.json";
+        String outputJson2 = "path_to_output_json_file2.json";
+
+        convertXmlToJson(inputXml1, outputJson1);
+        convertXmlToJson(inputXml2, outputJson2);
+    }
+
+    private static void convertXmlToJson(String inputXml, String outputJson) {
+        try {
+            XmlMapper xmlMapper = new XmlMapper();
+            String xmlString = new String(new File(inputXml).toURI().toURL().openStream().readAllBytes());
+            JsonNode node = xmlMapper.readTree(xmlString);
+
+            ObjectMapper jsonMapper = new ObjectMapper();
+            jsonMapper.writeValue(new File(outputJson), node);
+
+            System.out.println("Converted " + inputXml + " to " + outputJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
